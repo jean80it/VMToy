@@ -1,0 +1,10 @@
+; comment
+INIT 0 40 ; other comment
+JMP label
+LOAD A 3
+LOAD B 5 
+:label
+SIN C 0.5
+ADD A -6 
+STOR A @0
+TRM
