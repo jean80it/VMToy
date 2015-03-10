@@ -119,7 +119,9 @@ public:
 
 	std::vector<instruction> program;
 
-	Parser(){}
+	Parser(){
+	
+	}
 
 	Parser(char* sourcePath)
 	{

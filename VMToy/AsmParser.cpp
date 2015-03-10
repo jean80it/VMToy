@@ -42,13 +42,13 @@ void Parser::fn_op_done()
 {
 	dbgPrintf("operator found: '%s'\n", nameStorage);
 
-	auto operandPair = opNameCodeMap.find("f");
+	auto operandPair = opNameCodeMap.find(nameStorage);
 
 	if (operandPair != opNameCodeMap.end())
 	{
 		ushort opcode = operandPair->second;
 
-		if (!needsLabel(opcode))
+		if (needsLabel(opcode))
 		{
 			auto lblPair = labels.find(arg1Storage);
 
@@ -85,6 +85,8 @@ void Parser::fn_op_done()
 	}
 
 	resetOpName();
+	resetArg1();
+	resetArg2();
 }
 
 void Parser::fn_lbl_done()
@@ -118,7 +120,7 @@ void Parser::fn_arg1_done()
 {
 	dbgPrintf("arg1 found: '%s'\n", arg1Storage);
 
-	resetArg1();
+	//resetArg1();
 }
 
 void Parser::fn_n_stor()
@@ -151,7 +153,7 @@ void Parser::fn_n_done()
 	}
 
 	dbgPrintf("arg2 found: %f  (@%lu)\n", (((float)arg2.value) / 65536.0f), arg2.uvalue);
-	resetArg2();
+	//resetArg2();
 }
 
 void Parser::fn_addr_done(){} // ????????????????
@@ -171,7 +173,8 @@ void Parser::fn_addr_done(){} // ????????????????
 		/* 006 ? */{ &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err },
 		/* 007   */{ &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err },
 		/* 008   */{ &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err },
-		/* 009   */{ &Parser::fn_nop, &Parser::fn_nop, &Parser::fn_lbl_done, &Parser::fn_err, &Parser::fn_op_done, &Parser::fn_nop, &Parser::fn_arg1_done, &Parser::fn_nop, &Parser::fn_addr_done, &Parser::fn_n_done, &Parser::fn_n_done },
+//		/* 009   */{ &Parser::fn_nop, &Parser::fn_nop, &Parser::fn_lbl_done, &Parser::fn_err, &Parser::fn_op_done, &Parser::fn_nop, &Parser::fn_arg1_done, &Parser::fn_nop, &Parser::fn_addr_done, &Parser::fn_n_done, &Parser::fn_n_done },
+		/* 009   */{ &Parser::fn_nop, &Parser::fn_nop, &Parser::fn_lbl_done, &Parser::fn_err, &Parser::fn_nop, &Parser::fn_nop, &Parser::fn_arg1_done, &Parser::fn_nop, &Parser::fn_addr_done, &Parser::fn_n_done, &Parser::fn_n_done },
 		/* 010   */{ &Parser::fn_nop, &Parser::fn_nop, &Parser::fn_lbl_done, &Parser::fn_err, &Parser::fn_op_done, &Parser::fn_nop, &Parser::fn_arg1_done, &Parser::fn_nop, &Parser::fn_addr_done, &Parser::fn_n_done, &Parser::fn_n_done },
 		/* 011 ? */{ &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err },
 		/* 012 ? */{ &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err },
@@ -194,7 +197,8 @@ void Parser::fn_addr_done(){} // ????????????????
 		/* 029 ? */{ &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err },
 		/* 030 ? */{ &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err },
 		/* 031 ? */{ &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err },
-		/* 032   */{ &Parser::fn_nop, &Parser::fn_nop, &Parser::fn_lbl_done, &Parser::fn_err, &Parser::fn_op_done, &Parser::fn_nop, &Parser::fn_arg1_done, &Parser::fn_nop, &Parser::fn_addr_done, &Parser::fn_n_done, &Parser::fn_n_done },
+//		/* 032   */{ &Parser::fn_nop, &Parser::fn_nop, &Parser::fn_lbl_done, &Parser::fn_err, &Parser::fn_op_done, &Parser::fn_nop, &Parser::fn_arg1_done, &Parser::fn_nop, &Parser::fn_addr_done, &Parser::fn_n_done, &Parser::fn_n_done },
+		/* 032   */{ &Parser::fn_nop, &Parser::fn_nop, &Parser::fn_lbl_done, &Parser::fn_err, &Parser::fn_nop, &Parser::fn_nop, &Parser::fn_arg1_done, &Parser::fn_nop, &Parser::fn_addr_done, &Parser::fn_n_done, &Parser::fn_n_done },
 		/* 033 ! */{ &Parser::fn_err, &Parser::fn_nop, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err },
 		/* 034 " */{ &Parser::fn_err, &Parser::fn_nop, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err },
 		/* 035 # */{ &Parser::fn_err, &Parser::fn_nop, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err, &Parser::fn_err },

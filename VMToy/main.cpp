@@ -1,4 +1,4 @@
-#define DEBUG
+#include "dbgUtil.h"
 #include "AsmParser.h"
 #include "VM.h"
 
@@ -31,12 +31,12 @@ int main(int argn, char** argv)
 
 
 	Parser p("test.jasm");
-	VM vm(p.program);
+	//VM vm(p.program);
 
-	while (!vm.state.term)
+	/*while (!vm.state.term)
 	{
 		vm.execStep();
-	}
+	}*/
 
 	getchar();
 }
