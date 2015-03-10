@@ -1,4 +1,4 @@
-#include "VM.h"
+#include "VM.hpp"
 
 #pragma region OPs implementation
 
@@ -15,10 +15,9 @@ void VM::op_err() // ERROR - all available opcodes not assigned to an operator f
 
 void VM::op_init() // vmMemory - initializes vmMemory sized a bytes
 {
-	state.memSize = b.value;
+	reset();
+	state.memSize = b.shortValue;
 	state.vmMemory = (byte*)malloc((size_t)state.memSize);
-	state.startTime = clock();
-	srand(state.startTime);
 }
 
 void VM::op_load() // LOAD - loads byte at memory location b into register a
@@ -168,7 +167,7 @@ void VM::op_time() // TIME - A = milliseconds elapsed (since program start) in F
 
 void VM::op_dbg() // DEBUG - writes single char to console
 {
-	std::cout << ((char)b);
+	std::cout << ((char)b.byteValue);
 }
 
 
@@ -183,14 +182,14 @@ void VM::op_trm() // TERMINATE - terminates the program
 
 void VM::op_jmp() // JUMP - sets instruction pointer to a; WARNING: no checks for now!!
 {
-	state.IP = b.shortValue;
+	state.IP = b.value - 1; // IP will be incremented anyway
 }
 
 void VM::op_jz() // JUMP IF ZERO - sets instruction pointer to a only if ZF is set; WARNING: no checks for now!!
 {
 	if (state.ZF)
 	{
-		state.IP = b.shortValue;
+		state.IP = b.value - 1; // IP will be incremented anyway
 	}
 }
 
@@ -198,7 +197,7 @@ void VM::op_jnz() // JUMP IF NOT ZERO - sets instruction pointer to a only if ZF
 {
 	if (!state.ZF)
 	{
-		state.IP = b.shortValue;
+		state.IP = b.value - 1; // IP will be incremented anyway
 	}
 }
 
@@ -206,7 +205,7 @@ void VM::op_ja() // JUMP IF ABOVE - sets instruction pointer to a only if ZF is 
 {
 	if (state.AF)
 	{
-		state.IP = b.shortValue;
+		state.IP = b.value - 1; // IP will be incremented anyway
 	}
 }
 
@@ -214,7 +213,7 @@ void VM::op_jna() // JUMP IF NOT ABOVE - sets instruction pointer to a only if A
 {
 	if (!state.AF)
 	{
-		state.IP = b.shortValue;
+		state.IP = b.value - 1; // IP will be incremented anyway
 	}
 }
 

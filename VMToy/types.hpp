@@ -45,7 +45,7 @@ typedef struct VMState
 	bool OF; // overflow flag
 	bool AF; // above flag
 	byte* vmMemory;
-	short memSize;
+	ushort memSize;
 
 	bool term;
 	clock_t startTime;

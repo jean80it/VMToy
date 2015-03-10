@@ -7,13 +7,13 @@
 #include <vector>
 #include <map>
 
-#include "types.h"
+#include "types.hpp"
 
 class VM
 {
 	typedef void(VM::*pOperatorFn) ();
 
-	static const pOperatorFn opTable[46];
+	static const pOperatorFn opTable[];
 
 	byte a;
 	FP32 b;
@@ -74,11 +74,26 @@ public:
 
 	std::vector<instruction> program_;
 
-	VM(){}
+	VM()
+	{
+		reset();
+	}
 
 	VM(std::vector<instruction> & program)
 	{
 		load(program);
+		reset();
+	}
+
+	void reset()
+	{
+		state.AF = false;
+		state.IP = 0;
+		state.OF = false;
+		state.ZF = false;
+		state.startTime = clock();
+		srand(state.startTime);
+		state.term = false;
 	}
 
 	void load(std::vector<instruction> & program)
@@ -92,5 +107,6 @@ public:
 		a = std::get<1>(instr);
 		b = std::get<2>(instr);
 		(this->*opTable[std::get<0>(instr)])();
+		++state.IP; // TODO: check jumps
 	}
 };

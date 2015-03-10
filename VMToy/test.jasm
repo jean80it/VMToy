@@ -1,10 +1,9 @@
 ; comment
 INIT 0 40 ; other comment
-JMP label
-LOAD A 3
-LOAD B 5 
-:label
-SIN C 0.5
-ADD A -6 
-STOR A @0
+LOADI A 3
+LOADI B 1
+:loop
+DBG 0 69
+SUB A 2 ; ugh this sucks have to include possibility to express a register name as arg2
+JNZ loop
 TRM
