@@ -1,9 +1,15 @@
-; comment
-INIT 0 40 ; other comment
-LOADI A 3
-LOADI B 1
-:loop
-DBG 0 69
-SUB A 2 ; ugh this sucks have to include possibility to express a register name as arg2
-JNZ loop
-TRM
+; test assembly outputting a number of dots
+INIT 0 40	; other comment
+LOADI A 30	; put a 3 into register named A
+LOADI B 1	; put a 1 into register named B
+LOADI Z 0	; put a 1 into register named B
+:loop		; start of cycle
+DBG 0 '.'	; output a dot
+SUB A B		; (could create a sub immediate or a dec)
+CMP A Z     
+JA loop		; while A > 0
+
+LOADI C 69
+STOR C @0	; mem write test
+
+TRM			; terminate

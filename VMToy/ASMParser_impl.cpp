@@ -9,9 +9,13 @@ const std::map<std::string, ushort> ASMParser_Impl::opNameCodeMap =
 	{ "INIT", 2 },
 	{ "LOAD", 3 },
 	{ "LOADI", 4 },
-	{ "STOR", 5 },
-	{ "MOV", 6 },
-	{ "CMP", 7 },
+	{ "MOV", 5 },
+	{ "CMP", 6 },
+	{ "STOR", 7 },
+	{ "STORS", 8 },
+	{ "STORB", 9 },
+
+	// TODO: load, load byte, load short
 
 	// BOOL/BIT
 	{ "NOT", 10 },
@@ -45,6 +49,8 @@ const std::map<std::string, ushort> ASMParser_Impl::opNameCodeMap =
 	{ "JNZ", 43 },
 	{ "JA", 44 },
 	{ "JNA", 45 },
+
+	// TODO: YLD
 };
 //  opNameCodeMap init
 #pragma endregion

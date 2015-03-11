@@ -25,12 +25,13 @@ class VM
 	void op_init(); // vmMemory - initializes vmMemory sized a bytes
 	void op_load(); // LOAD - loads byte at memory location b into register a
 	void op_loadi(); // LOAD IMMEDIATE - loads value b into register a
-	void op_stor(); // STORE - stores byte in register a into memory location b
-	
-	// TODO: load/store for shortValue and Value; stori doesn't seem to be suitable unless i widen a operand... to write immediates to memory we've to loadi then stor...
 	void op_mov(); // MOVE - A = B
 	void op_cmp(); // COMPARE - sets ZF if reg[a] and reg[b] are equal; AF if reg[a]>reg[b]
-	
+	// stori doesn't seem to be suitable unless i widen a operand... to write immediates to memory we've to loadi then stor...
+	void op_stor(); // STORE - stores FP32 in register a into memory location b (in bytes)
+	void op_stors(); // STORE Short - stores short in register a into memory location b (in bytes)
+	void op_storb(); // STORE Byte - stores byte in register a into memory location b (in bytes)
+
 	// BOOL/BIT
 	void op_not(); // NEGATE - A = ~A
 	void op_and(); // AND - A = A & B

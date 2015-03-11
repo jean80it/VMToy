@@ -58,3 +58,4 @@ typedef std::tuple < ushort, byte, FP32 > instruction;
 
 #define NAMEMAXSIZE 10
 #define ARG1MAXSIZE 30
+#define ARG2MAXSIZE 30

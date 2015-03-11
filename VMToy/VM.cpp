@@ -26,12 +26,24 @@ void VM::op_load() // LOAD - loads byte at memory location b into register a
 	state.reg[a].byteValue = state.vmMemory[b.uvalue];
 }
 
+// TODO: load, load byte, load short
+
 void VM::op_loadi() // LOAD IMMEDIATE - loads value b into register a
 {
 	state.reg[a].value = b.value;
 }
 
 void VM::op_stor() // STORE - stores byte in register a into memory location b
+{
+	*(FP32*)(&state.vmMemory[b.uvalue]) = state.reg[a];
+}
+
+void VM::op_stors() // STORE - stores byte in register a into memory location b
+{
+	*(short*)(&state.vmMemory[b.uvalue]) = state.reg[a].shortValue;
+}
+
+void VM::op_storb() // STORE - stores byte in register a into memory location b
 {
 	state.vmMemory[b.uvalue] = state.reg[a].byteValue;
 }
@@ -230,11 +242,11 @@ const VM::pOperatorFn VM::opTable[] =
 	/*  2 */ &VM::op_init,
 	/*  3 */ &VM::op_load,
 	/*  4 */ &VM::op_loadi,
-	/*  5 */ &VM::op_stor,
-	/*  6 */ &VM::op_mov,
-	/*  7 */ &VM::op_cmp,
-
-	&VM::op_err, &VM::op_err, // skipping 8, 9
+	/*  5 */ &VM::op_mov,
+	/*  6 */ &VM::op_cmp,
+	/*  7 */ &VM::op_stor,
+	/*  8 */ &VM::op_stors,
+	/*  9 */ &VM::op_storb,
 
 	// BOOL/BIT
 	/* 10 */ &VM::op_not,

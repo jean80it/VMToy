@@ -18,9 +18,11 @@ class ASMParser_Impl : public ASM_Parser
 	char nameStorage[NAMEMAXSIZE] = {};
 	int nameStorageIdx = 0;
 
-
 	char arg1Storage[ARG1MAXSIZE] = {};
 	int arg1StorageIdx = 0;
+
+	char arg2Storage[ARG2MAXSIZE] = {};
+	int arg2StorageIdx = 0;
 
 	FP32 arg2;
 	int arg2decimalDiv = 10;
@@ -60,6 +62,9 @@ private:
 		arg2 = 0;
 		arg2decimalDiv = 10;
 		arg2neg = false;
+
+		memset(&(arg2Storage), 0, ARG2MAXSIZE);
+		arg2StorageIdx = 0;
 	}
 
 
@@ -67,22 +72,46 @@ private:
 	// unexpected character for current state: signal if in debug mode
 	void fsmAction_error() override
 	{
-		dbgPrintf("Error %d on line %d, col %d", 1, line, column);
+		dbgPrintf("Error processing '%c' ( # %d ) while in state %d on line %d, col %d", currentInput, currentInput, state, line, column);
 	}
 
 	// nop (and no error)
 	void fsmAction_none() override
 	{}
 
+	byte getOrSetIdentifierCode(char * identifier)
+	{
+		auto idPair = identifiers.find(identifier);
+		if (idPair != identifiers.end())
+		{
+			// identifier found
+			return idPair->second;
+		}
+		else
+		{
+			identifiers.insert({ identifier, regCount });
+			auto result = regCount;
+			++regCount;
+			return result;
+		}
+	}
+
 	void fsmAction_instr_done() override
 	{
+		dbgPrintf("instruction completed: '%s'\n", nameStorage);
+
+		// arg2 adjustments
 		if (arg2neg)
 		{
 			arg2.shortValue = -arg2.shortValue;
 		}
 
-		dbgPrintf("instruction completed: '%s'\n", nameStorage);
+		if (arg2StorageIdx > 0) // arg2 is a named register 
+		{
+			arg2.byteValue = getOrSetIdentifierCode(arg2Storage);
+		}
 
+		// retrieve operand code
 		auto operandPair = opNameCodeMap.find(nameStorage);
 
 		if (operandPair != opNameCodeMap.end())
@@ -106,18 +135,7 @@ private:
 			}
 			else // do not need label: retrieve or create identifier
 			{
-				auto idPair = identifiers.find(arg1Storage);
-				if (idPair != identifiers.end())
-				{
-					// identifier found
-					program.push_back(instruction(opcode, idPair->second, arg2));
-				}
-				else
-				{
-					identifiers.insert({ arg1Storage, regCount });
-					program.push_back(instruction(opcode, regCount, arg2));
-					++regCount;
-				}
+				program.push_back(instruction(opcode, getOrSetIdentifierCode(arg1Storage), arg2));
 			}
 		}
 		else
@@ -191,6 +209,17 @@ private:
 	void fsmAction_addr_stor() override
 	{
 		arg2.uvalue = arg2.uvalue * 10 + (int)(currentInput - '0');
+	}
+
+
+	void fsmAction_arg2_name_stor() override
+	{
+		arg2Storage[arg2StorageIdx++] = currentInput;
+	}
+
+	void fsmAction_set_arg2_char() override
+	{
+		arg2.byteValue = (byte)currentInput;
 	}
 
 public:
