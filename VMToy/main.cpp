@@ -9,7 +9,7 @@ int main(int argn, char** argv)
 	ASMParser_Impl p("test.jasm");
 	VM vm(p.program);
 
-	while (!vm.state.term)
+	while (vm.isRunning())
 	{
 		vm.execStep();
 	}

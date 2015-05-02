@@ -40,17 +40,12 @@ union FP32
 
 typedef struct VMState
 {
-	ushort IP; // instruction pointer
-	bool ZF; // zero flag
-	bool OF; // overflow flag
-	bool AF; // above flag
 	byte* vmMemory;
 	ushort memSize;
 
-	bool term;
 	clock_t startTime;
 
-	FP32 reg[255];
+	FP32 reg[255]; // 0 is FLAGS, 1 is IP, 2 is SP
 
 } VMState;
 

@@ -1,15 +1,28 @@
 ; test assembly outputting a number of dots
 INIT 0 40	; other comment
-LOADI A 30	; put a 3 into register named A
-LOADI B 1	; put a 1 into register named B
-LOADI Z 0	; put a 1 into register named B
+MOV A 0	; put a 0 into register named A
 :loop		; start of cycle
-DBG 0 '.'	; output a dot
-SUB A B		; (could create a sub immediate or a dec)
-CMP A Z     
-JA loop		; while A > 0
 
-LOADI C 69
-STOR C @0	; mem write test
+; writing tens
+MOV B A
+DIV B 10
+ADD B '0'
+DBG 0 B
+
+; writing units
+MOV B A
+MOD B 10
+ADD B '0'
+DBG 0 B
+
+; writing newline
+DBG 0 13
+DBG 0 10
+
+; incrementing
+ADD A 1		
+
+CMP A 30     
+JNA loop		; while A < 30
 
 TRM			; terminate

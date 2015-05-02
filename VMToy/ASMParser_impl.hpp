@@ -12,6 +12,9 @@
 #include "ASMParser.hpp"
 #include "types.hpp"
 
+#define IMMEDIATE_OP(x) x
+#define DEFERRED_OP(x) (x | 128)
+
 class ASMParser_Impl : public ASM_Parser
 {
 
@@ -32,7 +35,7 @@ class ASMParser_Impl : public ASM_Parser
 
 	std::map<std::string, ushort> labels;
 	std::map<std::string, byte> identifiers;
-	std::map<std::string, std::vector<ushort>> unsatisfiedLabels;
+	std::map<std::string, std::vector<ushort>> unknownLabels;
 
 	int regCount = 0;
 
@@ -42,7 +45,7 @@ public:
 private:
 	bool needsLabel(int opcode)
 	{
-		return opcode >= 41; // trivial solution for now
+		return opcode >= 0x41; // trivial solution for now
 	}
 
 	void resetOpName()
@@ -79,6 +82,21 @@ private:
 	void fsmAction_none() override
 	{}
 
+	bool getIdentifierCode(char * identifier, byte & code)
+	{
+		auto idPair = identifiers.find(identifier);
+		if (idPair != identifiers.end())
+		{
+			code = idPair->second;
+			return true;
+		}
+		else
+		{
+			code = 255;
+			return false;
+		}
+	}
+
 	byte getOrSetIdentifierCode(char * identifier)
 	{
 		auto idPair = identifiers.find(identifier);
@@ -96,7 +114,7 @@ private:
 		}
 	}
 
-	void fsmAction_instr_done() override
+	void fsmAction_instr_done() override // TODO: tell immediate operators apart from deferred ones
 	{
 		dbgPrintf("instruction completed: '%s'\n", nameStorage);
 
@@ -114,28 +132,66 @@ private:
 		// retrieve operand code
 		auto operandPair = opNameCodeMap.find(nameStorage);
 
-		if (operandPair != opNameCodeMap.end())
+		if (operandPair != opNameCodeMap.end()) // if operator is in operators list
 		{
-			ushort opcode = operandPair->second;
+			ushort opcode = operandPair->second; // get operator code
 
-			if (needsLabel(opcode))
+			if (needsLabel(opcode)) // is this an operator that would require just a label? (because usually first identifier is a register)
 			{
 				auto lblPair = labels.find(arg1Storage);
 
 				if (lblPair != labels.end())
 				{
-					program.push_back(instruction(opcode, 0, FP32(lblPair->second)));
+					program.push_back(instruction(IMMEDIATE_OP(opcode), 0, FP32(lblPair->second)));
 				}
 				else
 				{
-					unsatisfiedLabels[arg1Storage].push_back(program.size()); // current instruction needs reference to yet-to-be-specified label with given name
-					program.push_back(instruction(opcode, 0, FP32(0)));
-					dbgPrintf("unknown label '%s' at: %d\n", arg1Storage, program.size() - 1);
+					// is it a variable?
+					byte idCode;
+					if (getIdentifierCode(arg1Storage, idCode))
+					{
+						program.push_back(instruction(DEFERRED_OP(opcode), 0, idCode));
+					}
+					else
+					{ 
+						unknownLabels[arg1Storage].push_back(program.size()); // current instruction needs reference to yet-to-be-specified label with given name
+						program.push_back(instruction(DEFERRED_OP(opcode), 0, FP32(0)));
+						dbgPrintf("unknown label '%s' at: %d\n", arg1Storage, program.size() - 1);
+					}
 				}
 			}
-			else // do not need label: retrieve or create identifier
+			else // instruction is not "label only": retrieve or create identifier
 			{
-				program.push_back(instruction(opcode, getOrSetIdentifierCode(arg1Storage), arg2));
+				if (arg2StorageIdx == 0) // we just wrote to FP32 value and didn't accumulate any names: arg2 is immediate value, and this is an immediate instruction
+				{
+					program.push_back(instruction(IMMEDIATE_OP(opcode), getOrSetIdentifierCode(arg1Storage), arg2)); // immediate mode (|64)
+				}
+				else
+				{   // we collected an identifier rather than an immediate value for arg2
+
+					byte idCode;
+					if (getIdentifierCode(arg2Storage, idCode)) // check the identifier is amongst already known register names
+					{
+						program.push_back(instruction(DEFERRED_OP(opcode), getOrSetIdentifierCode(arg1Storage), idCode));
+					}
+					else
+					{
+						// look for label and use it as an immediate value
+						auto lblPair = labels.find(arg2Storage);
+
+						if (lblPair != labels.end())
+						{
+							program.push_back(instruction(IMMEDIATE_OP(opcode), getOrSetIdentifierCode(arg1Storage), FP32(lblPair->second))); // immediate mode (|64)
+						}
+						else
+						{
+							// forward label as immediate
+							unknownLabels[arg2Storage].push_back(program.size()); // current instruction needs reference to yet-to-be-specified label with given name
+							program.push_back(instruction(IMMEDIATE_OP(opcode), getOrSetIdentifierCode(arg1Storage), FP32(0)));
+							dbgPrintf("unknown label '%s' at: %d\n", arg2Storage, program.size() - 1);
+						}
+					}
+				}
 			}
 		}
 		else
@@ -164,8 +220,8 @@ private:
 		labels.insert({ nameStorage, labelValue }); // insert label into list of labels
 
 		// try to fix earlier jumps to yet to be specified labels
-		auto unsPair = unsatisfiedLabels.find(nameStorage);
-		if (unsPair != unsatisfiedLabels.end()) // if there are previous jumps to undefined label with name == to last inserted label
+		auto unsPair = unknownLabels.find(nameStorage);
+		if (unsPair != unknownLabels.end()) // if there are previous jumps to undefined label with name == to last inserted label
 		{
 			for each (ushort idx in unsPair->second) // for each pointed instruction
 			{
@@ -223,7 +279,16 @@ private:
 	}
 
 public:
-	ASMParser_Impl(char* sourcePath)
+
+	ASMParser_Impl()
+	{
+		identifiers.insert({ "FLAGS", regCount++ }); 
+		identifiers.insert({ "IP", regCount++ }); // INSTRUCTION POINTER
+		identifiers.insert({ "SP", regCount++ }); // STACK POINTER
+		identifiers.insert({ "CB", regCount++ }); // CODE BASE: automatically set by machine on jumps, according to "instructions map" table, is added to IP
+	}
+
+	ASMParser_Impl(char* sourcePath) : ASMParser_Impl()
 	{
 		parseAsm(sourcePath);
 	}
@@ -244,5 +309,7 @@ public:
 				feed(buf[i]);
 			}
 		} while (bytesRead == bufSize);
+
+		// TODO: check unsatisfied labels have been all satisfied
 	}
 };
