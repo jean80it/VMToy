@@ -21,6 +21,7 @@
 
 // Top Of Stack
 #define TOS *((FP32*)&state.vmMemory[CB_REGISTER - (SP_REGISTER + 1) * sizeof(FP32)])
+#define TOSn(x) *((FP32*)&state.vmMemory[CB_REGISTER - (SP_REGISTER + 1 + x) * sizeof(FP32)])
 
 enum class VMFlags : unsigned char
 {
@@ -89,8 +90,8 @@ class VM
 	void op_yld();
 
 	void op_push();
-	void op_pop();
-
+	void op_peek();
+	
 
 	// IMMEDIATES
 	void op_initi(); // vmMemory - initializes vmMemory sized a bytes
@@ -116,6 +117,9 @@ class VM
 	void op_modi();
 	void op_rndi();
 	void op_dbgi();
+	void op_pushi();
+	void op_popi();
+	void op_peeki();
 	void op_jmpi();
 	void op_jzi();
 	void op_jnzi();

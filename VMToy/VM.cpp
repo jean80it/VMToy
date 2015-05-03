@@ -171,6 +171,23 @@ void VM::op_dbgi() // DEBUG - writes single char to console
 	std::cout << ((char)b.byteValue);
 }
 
+void VM::op_pushi()
+{
+	++SP_REGISTER;
+	TOS = b;
+}
+
+void VM::op_popi() // it has suffix "i" because in POP instruction you only use arg1 register, and hence arg2 is set on immediate 0
+{
+	state.reg[a] = TOS;
+	--SP_REGISTER;
+}
+
+void VM::op_peeki() 
+{
+	state.reg[a] = TOSn(b.shortValue);
+}
+
 void VM::op_jmpi() // JUMP - sets instruction pointer to b
 {
 	// WARNING: no checks for now!!
@@ -505,10 +522,9 @@ void VM::op_push()
 	TOS = state.reg[a];
 }
 
-void VM::op_pop()
+void VM::op_peek()
 {
-	state.reg[a] = TOS;
-	--SP_REGISTER;
+	state.reg[a] = TOSn(state.reg[b.byteValue].shortValue);
 }
 
 
@@ -563,8 +579,11 @@ const VM::pOperatorFn VM::opTable[256] =
 	/* 0x30 */ &VM::op_rndi,
 	/* 0x31 */ &VM::op_err, // time
 	/* 0x32 */ &VM::op_dbgi,
-
-	&VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err,
+	/* 0x33 */ &VM::op_pushi,
+	/* 0x33 */ &VM::op_popi,
+	/* 0x34 */ &VM::op_peeki,
+	
+	&VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err,
 
 	// FLOW
 	/* 0x40 */ &VM::op_trmi,
@@ -626,8 +645,11 @@ const VM::pOperatorFn VM::opTable[256] =
 	/* 0x30 */ &VM::op_rnd,
 	/* 0x31 */ &VM::op_time,
 	/* 0x32 */ &VM::op_dbg,
+	/* 0x33 */ &VM::op_push,
+	/* 0x33 */ &VM::op_err, // no pop; pop just uses arg1, so arg2 is automatically set to immediate 0
+	/* 0x34 */ &VM::op_peek,
 
-	&VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err,
+	&VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err, &VM::op_err,
 
 	// FLOW
 	/* 0x40 */ &VM::op_trm,

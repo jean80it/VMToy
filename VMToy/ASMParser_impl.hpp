@@ -75,7 +75,8 @@ private:
 	// unexpected character for current state: signal if in debug mode
 	void fsmAction_error() override
 	{
-		dbgPrintf("Error processing '%c' ( # %d ) while in state %d on line %d, col %d", currentInput, currentInput, state, line, column);
+		dbgPrintf("> Error processing '%c' ( # %d ) while in state %d on line %d, col %d\n", currentInput, currentInput, state, line, column);
+		// TODO: set some error state
 	}
 
 	// nop (and no error)

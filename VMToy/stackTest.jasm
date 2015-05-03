@@ -1,0 +1,25 @@
+; String reversal - stack test
+
+INIT 0 40	; other comment
+DBG 0 '>'
+
+; push a string on to the stack
+PUSH 0 'a'
+PUSH 0 'b'
+PUSH 0 'c'
+PUSH 0 'd'
+PUSH 0 'e'
+PUSH 0 'f'
+
+; loop for 6 times
+MOV a 6
+:loop
+
+; get a char from the stack and print it
+POP b
+DBG 0 b
+
+SUB a 1
+JNA loop ; loop for 6 times (end)
+
+TRM			; terminate

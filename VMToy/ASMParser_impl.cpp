@@ -38,6 +38,9 @@ const std::map<std::string, ushort> ASMParser_Impl::opNameCodeMap =
 	{ "RND",	0x30 },
 	{ "TIME",	0x31 },
 	{ "DBG",	0x32 },
+	{ "PUSH",	0x33 },
+	{ "POP",	0x34 },
+	{ "PEEK",	0x35 },
 
 	// FLOW
 	{ "TRM",	0x40 },

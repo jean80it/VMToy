@@ -3,21 +3,9 @@ INIT 0 40	; other comment
 MOV A 0	; put a 0 into register named A
 :loop		; start of cycle
 
-; writing tens
-MOV B A
-DIV B 10
-ADD B '0'
-DBG 0 B
-
-; writing units
-MOV B A
-MOD B 10
-ADD B '0'
-DBG 0 B
-
-; writing newline
-DBG 0 13
-DBG 0 10
+push A
+;call printInt
+JMP printInt
 
 ; incrementing
 ADD A 1		
@@ -26,3 +14,38 @@ CMP A 30
 JNA loop		; while A < 30
 
 TRM			; terminate
+
+
+:printInt ; takes one parameter: integer to print
+; get integer to print
+PEEK PARAM1 1 ; 0 is Top Of Stack that is always IP pushed from CALL. 1 here is our parameter
+MOV printIntCount 0
+
+:printIntLoop
+; get least significant digit value
+MOV TMP1 PARAM1
+MOD TMP1 10
+
+; note down how many digit we got so far
+ADD printIntCount 1
+
+; push least significant digit on to the stack
+PUSH TMP1
+
+; divide int by 10
+DIV PARAM1 10
+AND PARAM1 32767 ; clear fractionary part
+
+JNZ printIntLoop ; continue until no more digits
+
+:printIntLoop2
+POP TMP1 
+ADD TMP1 '0'
+DBG 0 TMP1
+SUB printIntCount 1
+JNZ printIntLoop2
+
+RET ; END of printInt
+
+
+TRM
